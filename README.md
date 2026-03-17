@@ -2,7 +2,8 @@
 
 **Course:** Unsupervised Learning 2025/2026 | NOVA FCT
 
-**Team:** * Afonso Simões - 73204  
+**Team:** 
+* Afonso Simões - 73204  
 * José Moutinho - [Inserir Número]  
 * Luís Nunes - [Inserir Número]  
 
