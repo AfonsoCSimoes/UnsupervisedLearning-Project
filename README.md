@@ -19,7 +19,7 @@ Conforming to the project's reproducibility requirements, the repository is orga
 * `figures/` & `tables/`: Output directories where the pipeline automatically saves all visual and tabular results.
 * `experiments.csv`: Machine-readable log detailing method, parameters, seeds, metrics, and diagnostics.
 * `environment.yml`: Conda environment specification.
-* `run_all.bat`: Single-entry point script to regenerate all results end-to-end.
+* `run_all.py`: Single-entry point script to regenerate all results end-to-end.
 
 ## 🚀 Getting Started & Dataset Setup
 
