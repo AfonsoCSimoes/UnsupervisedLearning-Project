@@ -5,7 +5,7 @@
 **Team:** 
 * Afonso Simões - 73204  
 * José Moutinho - [Inserir Número]  
-* Luís Nunes - [Inserir Número]  
+* Luís Nunes - 73216
 
 ## 📌 Overview
 This repository contains the code and methodology for a reproducible clustering study on the real-world Hotel Booking Demand dataset. The goal is to design an end-to-end data mining pipeline to discover coherent "booking profiles" without the use of class labels, while strictly enforcing leakage control (excluding outcome/post-event variables) and proper feature governance.
