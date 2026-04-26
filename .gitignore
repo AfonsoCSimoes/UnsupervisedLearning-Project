@@ -1,8 +1,8 @@
-# Ignore raw data files (Project requirement)
+# Ignore raw data files
 data/raw/*.csv
 
-# Ignore generated experiments log (if you want to start fresh, though you may commit the final one)
-# experiments.csv
+# Ignore generated experiments log
+experiments.csv
 
 # Python caches and environments
 __pycache__/
