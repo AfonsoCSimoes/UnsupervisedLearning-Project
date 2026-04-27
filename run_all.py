@@ -4,9 +4,11 @@ import pandas as pd
 from src.data_loader import load_data
 from src.preprocessing import clean_and_engineer_data, build_preprocessor
 from src.evaluation import evaluate_models
+import datetime
 
 
 def main():
+    initial = datetime.datetime.now()
     print("Starting Unsupervised Learning Pipeline...")
 
     os.makedirs('tables', exist_ok=True)
@@ -35,8 +37,10 @@ def main():
 
     final_experiments_df = pd.concat(all_results, ignore_index=True)
     final_experiments_df.to_csv('tables/experiments.csv', index=False)
+    
+    final = datetime.datetime.now() - initial
 
-    print("Pipeline complete. Check tables/experiments.csv for results.")
+    print(f"Pipeline completed in {final}. Check tables/experiments.csv for results.")
 
 
 if __name__ == "__main__":
