@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer
+from sklearn.preprocessing import RobustScaler, StandardScaler, OneHotEncoder, FunctionTransformer
 from sklearn.impute import SimpleImputer
 
 
@@ -34,11 +34,10 @@ def clean_and_engineer_data(df):
     return df
 
 
-def build_preprocessor():
+def build_preprocessor(scaler_type='standard'):
     """
     Builds the scikit-learn ColumnTransformer to create the R-EUCLID matrix.
     """
-
     # Variables that need log1p transformation to handle heavy right-skew
     log_num_features = [
         "lead_time",
@@ -57,18 +56,21 @@ def build_preprocessor():
         "hotel",
         "customer_type",
         "country_grouped",
+        "arrival_date_month",
     ]
 
+    chosen_scaler = StandardScaler() if scaler_type == 'standard' else RobustScaler()
+    
     # Pipeline for log-transformed numericals
     log_num_pipeline = Pipeline(
         [
             ("log1p", FunctionTransformer(np.log1p, validate=False)),
-            ("scaler", StandardScaler()),
+            ("scaler", chosen_scaler),
         ]
     )
 
     # Pipeline for standard numericals
-    standard_num_pipeline = Pipeline([("scaler", StandardScaler())])
+    standard_num_pipeline = Pipeline([("scaler", chosen_scaler)])
 
     # Pipeline for categoricals (No scaling applied to 0/1 columns as per rules)
     cat_pipeline = Pipeline(

@@ -1,16 +1,14 @@
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
-from modeling import ikmeans_initialize
+from src.modeling import ikmeans_initialize
 
 
-def evaluate_models(X_processed, k_range=range(3, 9), seeds=[42, 123, 456, 789, 999]):
+def evaluate_models(X_processed, rep_id, k_range=range(3, 9), seeds=[42, 123, 456, 789, 999]):
     """
     Execute the tests of stability and generate the experiments.csv
     """
     logs = []
-
-    rep_id = 'R-EUCLID-standard-countryTop15-noADR'
 
     print("\nStarting Standard K-Means evaluation")
     for k in k_range:
@@ -25,7 +23,7 @@ def evaluate_models(X_processed, k_range=range(3, 9), seeds=[42, 123, 456, 789, 
                 'method': 'k-means',
                 'k': k,
                 'seed': seed,
-                'silhouette': silhouette_score(X_processed, labels),
+                'silhouette': silhouette_score(X_processed, labels, sample_size=30000),
                 'calinski_harabasz': calinski_harabasz_score(X_processed, labels),
                 'davies_bouldin': davies_bouldin_score(X_processed, labels)
             })
@@ -50,7 +48,7 @@ def evaluate_models(X_processed, k_range=range(3, 9), seeds=[42, 123, 456, 789, 
                 'method': 'ik-means',
                 'k': k_ik,
                 'seed': 'deterministic',
-                'silhouette': silhouette_score(X_processed, labels_ik),
+                'silhouette': silhouette_score(X_processed, labels_ik, sample_size=30000),
                 'calinski_harabasz': calinski_harabasz_score(X_processed, labels_ik),
                 'davies_bouldin': davies_bouldin_score(X_processed, labels_ik)
             })
@@ -58,7 +56,6 @@ def evaluate_models(X_processed, k_range=range(3, 9), seeds=[42, 123, 456, 789, 
         print(f"Aviso: iK-Means encontrou um erro: {e}")
 
     df_results = pd.DataFrame(logs)
-    df_results.to_csv('../tables/experiments.csv', index=False)
-    print("\nEvaluation successed! Results saved at 'experiments.csv'.")
+    print("\nEvaluation successed!")
 
     return df_results
