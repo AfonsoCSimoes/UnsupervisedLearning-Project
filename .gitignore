@@ -2,7 +2,7 @@
 data/raw/*.csv
 
 # Ignore generated experiments log
-experiments.csv
+tables/*
 
 # Python caches and environments
 __pycache__/

@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 from src.modeling import ikmeans_initialize
-
+from sklearn.mixture import GaussianMixture
 
 def evaluate_models(X_processed, rep_id, k_range=range(3, 9), seeds=[42, 123, 456, 789, 999]):
     """
@@ -52,8 +52,40 @@ def evaluate_models(X_processed, rep_id, k_range=range(3, 9), seeds=[42, 123, 45
                 'calinski_harabasz': calinski_harabasz_score(X_processed, labels_ik),
                 'davies_bouldin': davies_bouldin_score(X_processed, labels_ik)
             })
+    
     except Exception as e:
         print(f"Aviso: iK-Means encontrou um erro: {e}")
+        
+    print("\nStarting Gaussian Mixture Model (GMM) evaluation")
+    aic_bic_logs = []
+    
+    for k in k_range:
+        for seed in seeds:
+            print(f"Training GMM: K={k:02d} | Seed={seed}")
+
+            gmm = GaussianMixture(n_components=k, random_state=seed, covariance_type='full', n_init=1)
+            labels_gmm = gmm.fit_predict(X_processed)
+
+            logs.append({
+                'representation_id': rep_id,
+                'method': 'gmm',
+                'k': k,
+                'seed': seed,
+                'silhouette': silhouette_score(X_processed, labels_gmm, sample_size=30000, random_state=seed),
+                'calinski_harabasz': calinski_harabasz_score(X_processed, labels_gmm),
+                'davies_bouldin': davies_bouldin_score(X_processed, labels_gmm)
+            })
+
+            if seed == 42:
+                aic_bic_logs.append({
+                    'k': k,
+                    'aic': gmm.aic(X_processed),
+                    'bic': gmm.bic(X_processed)
+                })
+
+    df_diagnostics = pd.DataFrame(aic_bic_logs)
+    safe_rep_id = rep_id.replace('-', '_')
+    df_diagnostics.to_csv(f'tables/gmm_diagnostics_{safe_rep_id}.csv', index=False)
 
     df_results = pd.DataFrame(logs)
     print("\nEvaluation successed!")
