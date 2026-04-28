@@ -25,7 +25,7 @@ def main():
     all_results = []
 
     for scaler_type in ["standard", "robust"]:
-        rep_id = f"R-EUCLID-{scaler_type}"
+        rep_id = f"R-EUCLID-{scaler_type}-countryTop15-noADR"
 
         preprocessor = build_preprocessor(scaler_type=scaler_type)
         X_processed = preprocessor.fit_transform(df_cleaned)
