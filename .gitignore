@@ -1,8 +1,11 @@
 # Ignore raw data files
 data/raw/*.csv
 
-# Ignore generated experiments log
+# Ignore generated files
 profiling_base_data.csv
+final_feature_space.csv
+X_scaled_matrix_robust.csv
+X_scaled_matrix_standard.csv
 
 # Python caches and environments
 __pycache__/
