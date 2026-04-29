@@ -19,7 +19,8 @@ def main():
 
     print("Extracting 'adr' and outcome variables for post-hoc profiling...")
     df_cleaned = clean_and_engineer_data(df)
-    profiling_data = df_cleaned[["is_canceled", "reservation_status", "adr"]].copy()
+    profiling_data = df_cleaned[["is_canceled",
+                                 "reservation_status", "adr"]].copy()
     profiling_data.to_csv("tables/profiling_base_data.csv", index=False)
 
     all_results = []
@@ -39,7 +40,7 @@ def main():
 
     print("\nCompiling experiments.csv...")
     final_experiments_df = pd.DataFrame(all_results)
-    final_experiments_df.to_csv("experiments.csv", index=False)
+    final_experiments_df.to_csv("/tables/experiments.csv", index=False)
 
     final_time = datetime.datetime.now()
     print(f"\nPipeline completed successfully in {final_time - initial}.")
