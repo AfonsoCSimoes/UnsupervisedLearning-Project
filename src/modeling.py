@@ -19,19 +19,18 @@ class APCluster:
 def compute_feature_statistics(
     X: FloatArray, use_unit_ranges: bool = False
 ) -> Tuple[FloatArray, FloatArray, float]:
-    """Computes the grand mean, feature scales, and total normalized scatter."""
+    """
+    Computes the grand mean, feature scales, and total normalized scatter.
+    """
     mu = np.mean(X, axis=0)
 
     if use_unit_ranges:
         r = np.ones_like(mu)
     else:
-
         r = np.ptp(X, axis=0)
-
         r[r == 0] = 1.0
 
     Y = (X - mu) / r
-
     D = np.sum(Y**2)
 
     return mu, r, D
@@ -40,13 +39,17 @@ def compute_feature_statistics(
 def normalized_squared_distances(
     X: FloatArray, indices: list[int], scales: FloatArray, reference: FloatArray
 ) -> FloatArray:
-    """Returns the normalized squared distances of selected rows to a reference point."""
+    """
+    Returns the normalized squared distances of selected rows to a reference point.
+    """
     X_sub = X[indices]
     return np.sum(((X_sub - reference) / scales) ** 2, axis=1)
 
 
 def cluster_centroid(X: FloatArray, indices: list[int]) -> FloatArray:
-    """Returns the component-wise mean of the selected rows."""
+    """
+    Returns the component-wise mean of the selected rows.
+    """
     return np.mean(X[indices], axis=0)
 
 
@@ -60,12 +63,13 @@ def extract_anomalous_cluster(
     tol: float = 1e-12,
     max_iter: int = 10_000,
 ) -> Tuple[list[int], FloatArray]:
-    """Alternates assignment and centroid update to extract one anomalous cluster."""
+    """
+    Alternates assignment and centroid update to extract one anomalous cluster.
+    """
     c = initial_centroid.copy()
     S_prev = []
 
     for _ in range(max_iter):
-
         dist_c = normalized_squared_distances(X, indices, scales, c)
         dist_mu = normalized_squared_distances(X, indices, scales, mean)
 
@@ -96,8 +100,10 @@ def ikmeans_initialize(
     max_iter: int = 10_000,
     use_unit_ranges: bool = False,
 ) -> Tuple[List[APCluster], FloatArray]:
-    """Main iK-means initialization procedure."""
-
+    """
+    Main iK-means initialization procedure. Identifies anomalous clusters
+    and returns them along with their standardized initial centroids.
+    """
     X = np.asarray(X, dtype=np.float64)
     n, d = X.shape
 
@@ -113,7 +119,6 @@ def ikmeans_initialize(
         seed = X[q].copy()
 
         S, c = extract_anomalous_cluster(X, remains, r, mu, seed, q, tol, max_iter)
-
         z = (c - mu) / r
 
         if D > 0:
@@ -141,11 +146,3 @@ def ikmeans_initialize(
     init_centroids = np.vstack([ap.centroid_std for ap in retained])
 
     return ap_clusters, init_centroids
-
-
-def run_baselines(X_processed, k_range, seeds=5):
-    """
-    To be developed by the team:
-    Run standard K-means and iK-means using the generated R-EUCLID matrix.
-    """
-    pass

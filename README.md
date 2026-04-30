@@ -1,53 +1,49 @@
 # Unsupervised Learning Project: Hotel Booking Demand
 
-**Course:** Unsupervised Learning 2025/2026 | NOVA FCT
-
-**Team:**
+**Course:** Unsupervised Learning 2025/2026 | NOVA FCT  
+**Team:**  
 
 * Afonso Simões - 73204  
-* José Moutinho - 73129
-* Luís Nunes - 73216
+* José Moutinho - 73129  
+* Luís Nunes - 73216  
 
-## Overview
+## Project Overview
 
-This repository contains the code and methodology for a reproducible clustering study on the real-world Hotel Booking Demand dataset. The goal is to design an end-to-end data mining pipeline to discover coherent "booking profiles" without the use of class labels, while strictly enforcing leakage control (excluding outcome/post-event variables) and proper feature governance.
+Welcome to our project repository for the Hotel Booking Demand dataset! We built this project to explore and implement an end-to-end data mining pipeline capable of discovering coherent "booking profiles." Rather than relying on class labels, our approach uses unsupervised clustering techniques. A major focus of our work has been strictly enforcing leakage control—making sure outcome and post-event variables are excluded from the clustering space—and establishing strong data governance.
 
-## Repository Structure
+## Repository Layout
 
-Conforming to the project's reproducibility requirements, the repository is organized as follows:
+We've organized our workspace carefully to ensure everything is reproducible and easy to navigate:
 
-* `data/raw/`: Directory for the raw dataset. **(Ignored by git - do not commit data here)**.
-* `data/`: Contains course release artifacts (`column_roles.csv`, `SHA256SUMS.txt`, `DATASET_MANIFEST.yml`) to ensure data provenance and methodological governance.
-* `src/`: Source code for data preprocessing, modeling, evaluation, and robustness analysis.
-* `notebooks/`: Jupyter notebooks demonstrating Exploratory Data Analysis (EDA) and pipeline testing.
-* `figures/` & `tables/`: Output directories where the pipeline automatically saves all visual and tabular results.
-* `experiments.csv`: Machine-readable log detailing method, parameters, seeds, metrics, and diagnostics.
-* `environment.yml`: Conda environment specification.
-* `run_all.py`: Single-entry point script to regenerate all results end-to-end.
+* `data/raw/`: The directory where the raw dataset should be placed. *(Note: This folder is ignored by git so we don't commit large data files.)*
+* `data/`: Contains essential course release artifacts (like `column_roles.csv`, `SHA256SUMS.txt`, and `DATASET_MANIFEST.yml`) used to verify our data's integrity.
+* `src/`: Holds all our core Python modules for preprocessing, modeling, evaluation, and robustness testing.
+* `notebooks/`: Jupyter notebooks that walk through our Exploratory Data Analysis (EDA), feature engineering, and pipeline validation.
+* `figures/` & `tables/`: Auto-generated directories where our scripts save plots and tabular data outputs.
+* `experiments.csv`: An automated log that records all method configurations, parameters, random seeds, evaluation metrics, and runtimes.
+* `environment.yml`: The Conda environment specification to ensure dependencies match perfectly.
+* `run_all.py`: The single-entry point script to execute the entire pipeline from start to finish.
 
-## Milestone 2: Mid-term Technical Progress
+## Milestone 2 Progress
 
-For the April 30th delivery, this repository demonstrates:
+As of the April 30th checkpoint, we have successfully implemented:
 
-1. **Data Governance & EDA:** Dataset hashes verified, missingness/outliers documented, and strict feature roles established (leakage variables excluded).
-2. **Preprocessing Pipeline:** A reproducible `scikit-learn` ColumnTransformer handling missing values, scaling (`StandardScaler` / `log1p`), and full one-hot encoding for categorical variables.
-3. **Baseline Modeling:** K-means and iK-means execution over a bounded $K$ grid, using Euclidean distance on our defined representation matrix.
-4. **Experiment Logging:** Automated tracking of models, seeds, Silhouette scores, and runtime into `experiments.csv`.
+1. **Data Governance & EDA:** We established strict dataset hash verification, mapped out missingness and outliers, and formally documented feature roles (ensuring leakage variables are strictly profiled post-clustering).
+2. **Preprocessing Pipeline:** We built a robust `scikit-learn` ColumnTransformer to handle missing values, apply numerical scaling (testing both `StandardScaler` and `RobustScaler`), and execute full one-hot encoding on our categorical features.
+3. **Baseline Modeling:** We integrated standard K-Means alongside an implementation of iK-Means, testing over a defined grid of $K$ values within our unified Euclidean representation matrix.
+4. **Experiment Tracking:** The pipeline automatically evaluates stability and internal metrics (Silhouette, Calinski-Harabasz, Davies-Bouldin) and logs them directly to `experiments.csv`.
 
-## Getting Started & Dataset Setup
+## Setting up the Dataset
 
-**CRITICAL: The raw dataset is NOT included in this repository.** To run the project locally, you must follow these exact steps to ensure the pipeline works:
+To run the pipeline locally, you will need to add the dataset manually:
 
-1. **Obtain the Dataset:** Download `hotel_bookings_course_release_v1.csv` from the course platform.
-2. **Place the File:** Move the file directly into the `data/raw/` folder.  
-*(Note: This is strictly required so it is possible to run the project locally without pushing a giant `.csv` file to GitHub.)*
-3. **Verify Integrity:** You can use the provided `SHA256SUMS.txt` to verify your local copy matches the authoritative "course release v1".
+1. Download the `hotel_bookings_course_release_v1.csv` file from the course platform.
+2. Place the file into the `data/raw/` folder in this project directory.
+3. Our scripts will automatically check this file against the `SHA256SUMS.txt` hash to ensure your local copy is valid before execution.
 
-## Environment Setup
+## Setting up the Environment
 
-To ensure reproducibility, install the exact dependencies used by our team:
-
+To avoid any version conflicts and ensure reproducibility, please set up the environment using Conda:
 ```bash
 conda env create -f environment.yml
 conda activate unsupervised_env
-```

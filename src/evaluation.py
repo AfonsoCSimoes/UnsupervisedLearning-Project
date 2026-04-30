@@ -13,7 +13,9 @@ def evaluate_models(
     X_processed, rep_id, k_range=range(3, 9), seeds=[42, 123, 456, 789, 999]
 ):
     """
-    Execute the tests of stability and generate the experiments log
+    Executes stability tests for standard K-Means across multiple Ks and seeds,
+    initializes iK-Means to determine the optimal K, and generates the experiment logs
+    tracking runtime, silhouette, calinski_harabasz, and davies_bouldin scores.
     """
     logs = []
 
@@ -24,7 +26,6 @@ def evaluate_models(
 
             kmeans = KMeans(n_clusters=k, random_state=seed, n_init=10)
 
-            # Track runtime
             start_time = time.time()
             labels = kmeans.fit_predict(X_processed)
             runtime = time.time() - start_time
