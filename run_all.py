@@ -40,7 +40,7 @@ def main():
 
     print("\nCompiling experiments.csv...")
     final_experiments_df = pd.DataFrame(all_results)
-    final_experiments_df.to_csv("/tables/experiments.csv", index=False)
+    final_experiments_df.to_csv("tables/experiments.csv", index=False)
 
     final_time = datetime.datetime.now()
     print(f"\nPipeline completed successfully in {final_time - initial}.")
