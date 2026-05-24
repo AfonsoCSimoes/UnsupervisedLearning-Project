@@ -19,8 +19,11 @@ def clean_and_engineer_data(df):
     """
     df = df.copy()
 
+    df = df[(df['adr'] >= 0) & (df['adr'] <= 5000)]
+
     df["children"] = df["children"].fillna(0)
-    df["total_nights"] = df["stays_in_weekend_nights"] + df["stays_in_week_nights"]
+    df["total_nights"] = df["stays_in_weekend_nights"] + \
+        df["stays_in_week_nights"]
     df["party_size"] = df["adults"] + df["children"] + df["babies"]
 
     top_15_countries = df["country"].value_counts().nlargest(15).index
@@ -34,7 +37,7 @@ def clean_and_engineer_data(df):
     return df
 
 
-def build_preprocessor(scaler_type="standard"):
+def build_preprocessor(scaler_type="standard", include_hotel=True):
     """
     Builds the scikit-learn ColumnTransformer to create the R-EUCLID matrix.
     Applies log1p transformation to heavy right-skewed numericals,
@@ -48,15 +51,18 @@ def build_preprocessor(scaler_type="standard"):
         "previous_bookings_not_canceled",
     ]
     standard_num_features = ["total_nights", "party_size"]
+
     cat_features = [
         "distribution_channel",
         "market_segment",
         "deposit_type",
-        "hotel",
         "customer_type",
         "country_grouped",
         "arrival_date_month",
     ]
+
+    if include_hotel:
+        cat_features.append("hotel")
 
     chosen_scaler = StandardScaler() if scaler_type == "standard" else RobustScaler()
 

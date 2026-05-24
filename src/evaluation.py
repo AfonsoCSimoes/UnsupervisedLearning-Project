@@ -10,8 +10,7 @@ from src.modeling import ikmeans_initialize
 
 
 def evaluate_models(
-    X_processed, rep_id, k_range=range(3, 9), seeds=[42, 123, 456, 789, 999]
-):
+        X_processed, rep_id, k_range=range(3, 9), seeds=[42, 123, 456, 789, 999], sample_rule="full_dataset"):
     """
     Executes stability tests for standard K-Means across multiple Ks and seeds,
     initializes iK-Means to determine the optimal K, and generates the experiment logs
@@ -41,15 +40,19 @@ def evaluate_models(
                     ),
                     "calinski_harabasz": calinski_harabasz_score(X_processed, labels),
                     "davies_bouldin": davies_bouldin_score(X_processed, labels),
-                    "runtime": runtime,
+                    "runtime_seconds": runtime,
+                    "sample_rule": sample_rule,
+                    "parameters": "n_init=10"
                 }
             )
 
     print("\nInitializing iK-MEANS")
     try:
         start_time_ik = time.time()
+
+        min_size = 100
         _, init_centroids = ikmeans_initialize(
-            X=X_processed, min_cluster_size=100, use_unit_ranges=True
+            X=X_processed, min_cluster_size=min_size, use_unit_ranges=True
         )
 
         k_ik = len(init_centroids)
@@ -73,7 +76,9 @@ def evaluate_models(
                         X_processed, labels_ik
                     ),
                     "davies_bouldin": davies_bouldin_score(X_processed, labels_ik),
-                    "runtime": runtime_ik,
+                    "runtime_seconds": runtime_ik,
+                    "sample_rule": sample_rule,
+                    "parameters": f"min_cluster_size={min_size}"
                 }
             )
     except Exception as e:
