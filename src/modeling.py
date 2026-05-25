@@ -1,8 +1,8 @@
+from sklearn.mixture import GaussianMixture
 import numpy as np
 from numpy.typing import NDArray
 from dataclasses import dataclass
 from typing import List, Tuple
-from sklearn.cluster import KMeans
 
 FloatArray = NDArray[np.float64]
 
@@ -118,7 +118,8 @@ def ikmeans_initialize(
         q = remains[q_local]
         seed = X[q].copy()
 
-        S, c = extract_anomalous_cluster(X, remains, r, mu, seed, q, tol, max_iter)
+        S, c = extract_anomalous_cluster(
+            X, remains, r, mu, seed, q, tol, max_iter)
         z = (c - mu) / r
 
         if D > 0:
@@ -146,3 +147,21 @@ def ikmeans_initialize(
     init_centroids = np.vstack([ap.centroid_std for ap in retained])
 
     return ap_clusters, init_centroids
+
+
+def gmm_initialize(X, n_clusters, random_state=42):
+    """
+    Instantiates and trains a Gaussian Mixture Model (GMM) with full covariance.
+    Returns the hard cluster membership labels based on the 
+    Maximum A Posteriori (MAP) probability.
+    """
+
+    gmm = GaussianMixture(
+        n_components=n_clusters,
+        covariance_type='full',
+        random_state=random_state,
+        n_init=1
+    )
+
+    labels = gmm.fit_predict(X)
+    return labels

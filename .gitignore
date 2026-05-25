@@ -6,6 +6,12 @@ profiling_base_data.csv
 final_feature_space.csv
 X_scaled_matrix_robust.csv
 X_scaled_matrix_standard.csv
+bootstrap_stability_robust.csv
+bootstrap_stability_standard.csv
+cluster_metrics_by_k_summary.csv
+cluster_relative_differences.csv
+
+/figures/*
 
 # Python caches and environments
 __pycache__/

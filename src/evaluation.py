@@ -1,12 +1,59 @@
 import time
+import numpy as np
 import pandas as pd
+import itertools
 from sklearn.cluster import KMeans
 from sklearn.metrics import (
     silhouette_score,
     calinski_harabasz_score,
     davies_bouldin_score,
+    adjusted_rand_score,
 )
-from src.modeling import ikmeans_initialize
+from sklearn.utils import resample
+from src.modeling import ikmeans_initialize, gmm_initialize
+
+
+def kmeans_bootstrap_stability(X, K, n_boot=20, seed=42):
+    """Calcula a estabilidade do K-Means via reamostragem."""
+    if isinstance(X, pd.DataFrame):
+        X = X.values
+
+    n_samples = X.shape[0]
+    boot_indices = []
+    boot_labels = []
+
+    for i in range(n_boot):
+        indices = resample(np.arange(n_samples), random_state=seed+i)
+        X_boot = X[indices]
+        model = KMeans(n_clusters=K, random_state=seed+i, n_init=10)
+        labels = model.fit_predict(X_boot)
+        boot_indices.append(indices)
+        boot_labels.append(labels)
+
+    ari_scores = []
+    for i, j in itertools.combinations(range(n_boot), 2):
+        idx_i, idx_j = boot_indices[i], boot_indices[j]
+        intersect = np.intersect1d(idx_i, idx_j)
+        if len(intersect) == 0:
+            continue
+
+        def get_intersect_labels(idx_array, labels_array, intersect_pts):
+            mapping = {pt: lbl for pt, lbl in zip(idx_array, labels_array)}
+            return [mapping[pt] for pt in intersect_pts]
+
+        labels_i = get_intersect_labels(idx_i, boot_labels[i], intersect)
+        labels_j = get_intersect_labels(idx_j, boot_labels[j], intersect)
+        ari_scores.append(adjusted_rand_score(labels_i, labels_j))
+
+    if len(ari_scores) == 0:
+        return {"mean_ARI": None, "std_ARI": None, "min_ARI": None, "max_ARI": None}
+
+    return {
+        "mean_ARI": np.mean(ari_scores),
+        "std_ARI": np.std(ari_scores),
+        "min_ARI": np.min(ari_scores),
+        "max_ARI": np.max(ari_scores),
+    }
 
 
 def evaluate_models(
@@ -20,6 +67,8 @@ def evaluate_models(
 
     print("\nStarting Standard K-Means evaluation")
     for k in k_range:
+        stability_metrics = kmeans_bootstrap_stability(
+            X_processed, k, n_boot=20, seed=42)
         for seed in seeds:
             print(f"Training K-Means: K={k:02d} | Seed={seed}")
 
@@ -42,7 +91,44 @@ def evaluate_models(
                     "davies_bouldin": davies_bouldin_score(X_processed, labels),
                     "runtime_seconds": runtime,
                     "sample_rule": sample_rule,
-                    "parameters": "n_init=10"
+                    "parameters": "n_init=10",
+                    "mean_ARI": stability_metrics["mean_ARI"],
+                    "std_ARI": stability_metrics["std_ARI"],
+                    "min_ARI": stability_metrics["min_ARI"],
+                    "max_ARI": stability_metrics["max_ARI"],
+                }
+            )
+
+    print("\nInitializing GMM")
+    for k in k_range:
+        for seed in seeds:
+            print(f"Training GMM: K={k:02d} | Seed={seed}")
+
+            start_time = time.time()
+
+            labels_gmm = gmm_initialize(
+                X_processed, n_clusters=k, random_state=seed)
+
+            runtime = time.time() - start_time
+
+            logs.append(
+                {
+                    "representation_id": rep_id,
+                    "method": "gmm",
+                    "k": k,
+                    "seed": seed,
+                    "silhouette": silhouette_score(
+                        X_processed, labels_gmm, sample_size=30000
+                    ),
+                    "calinski_harabasz": calinski_harabasz_score(X_processed, labels_gmm),
+                    "davies_bouldin": davies_bouldin_score(X_processed, labels_gmm),
+                    "runtime_seconds": runtime,
+                    "sample_rule": sample_rule,
+                    "parameters": "covariance_type=full",
+                    "mean_ARI": None,
+                    "std_ARI": None,
+                    "min_ARI": None,
+                    "max_ARI": None
                 }
             )
 
@@ -78,7 +164,11 @@ def evaluate_models(
                     "davies_bouldin": davies_bouldin_score(X_processed, labels_ik),
                     "runtime_seconds": runtime_ik,
                     "sample_rule": sample_rule,
-                    "parameters": f"min_cluster_size={min_size}"
+                    "parameters": f"min_cluster_size={min_size}",
+                    "mean_ARI": None,
+                    "std_ARI": None,
+                    "min_ARI": None,
+                    "max_ARI": None
                 }
             )
     except Exception as e:
