@@ -147,21 +147,3 @@ def ikmeans_initialize(
     init_centroids = np.vstack([ap.centroid_std for ap in retained])
 
     return ap_clusters, init_centroids
-
-
-def gmm_initialize(X, n_clusters, random_state=42):
-    """
-    Instantiates and trains a Gaussian Mixture Model (GMM) with full covariance.
-    Returns the hard cluster membership labels based on the 
-    Maximum A Posteriori (MAP) probability.
-    """
-
-    gmm = GaussianMixture(
-        n_components=n_clusters,
-        covariance_type='full',
-        random_state=random_state,
-        n_init=1
-    )
-
-    labels = gmm.fit_predict(X)
-    return labels

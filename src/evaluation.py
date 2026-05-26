@@ -10,11 +10,18 @@ from sklearn.metrics import (
     adjusted_rand_score,
 )
 from sklearn.utils import resample
-from src.modeling import ikmeans_initialize, gmm_initialize
+from sklearn.mixture import GaussianMixture
+from src.modeling import ikmeans_initialize
 
 
 def kmeans_bootstrap_stability(X, K, n_boot=20, seed=42):
-    """Calcula a estabilidade do K-Means via reamostragem."""
+    """
+    Bootstrap stability for K-Means via pairwise ARI on overlapping records.
+
+    For each pair of bootstrap samples, ARI is computed only on the intersection
+    of record indices present in both samples. This avoids the need for label
+    alignment across disjoint sets and is the same method used in notebook 03.
+    """
     if isinstance(X, pd.DataFrame):
         X = X.values
 
@@ -53,6 +60,40 @@ def kmeans_bootstrap_stability(X, K, n_boot=20, seed=42):
         "std_ARI": np.std(ari_scores),
         "min_ARI": np.min(ari_scores),
         "max_ARI": np.max(ari_scores),
+    }
+
+
+def gmm_seed_stability(X, K, seeds, covariance_type="full", n_init=3):
+    """
+    Stability of GMM across seeds via pairwise ARI between hard assignments.
+    Returns mean/std/min/max ARI across all seed pairs.
+    """
+    from sklearn.mixture import GaussianMixture
+
+    all_labels = []
+    for seed in seeds:
+        gmm = GaussianMixture(
+            n_components=K,
+            covariance_type=covariance_type,
+            random_state=seed,
+            n_init=n_init,
+        )
+        gmm.fit(X)
+        all_labels.append(gmm.predict(X))
+
+    ari_scores = [
+        adjusted_rand_score(all_labels[i], all_labels[j])
+        for i, j in itertools.combinations(range(len(seeds)), 2)
+    ]
+
+    if len(ari_scores) == 0:
+        return {"mean_ARI": None, "std_ARI": None, "min_ARI": None, "max_ARI": None}
+
+    return {
+        "mean_ARI": np.mean(ari_scores),
+        "std_ARI":  np.std(ari_scores),
+        "min_ARI":  np.min(ari_scores),
+        "max_ARI":  np.max(ari_scores),
     }
 
 
@@ -101,13 +142,16 @@ def evaluate_models(
 
     print("\nInitializing GMM")
     for k in k_range:
+        gmm_stability = gmm_seed_stability(X_processed, k, seeds=seeds)
         for seed in seeds:
             print(f"Training GMM: K={k:02d} | Seed={seed}")
 
             start_time = time.time()
 
-            labels_gmm = gmm_initialize(
-                X_processed, n_clusters=k, random_state=seed)
+            gmm = GaussianMixture(
+                n_components=k, covariance_type="full", random_state=seed, n_init=3)
+            gmm.fit(X_processed)
+            labels_gmm = gmm.predict(X_processed)
 
             runtime = time.time() - start_time
 
@@ -125,10 +169,10 @@ def evaluate_models(
                     "runtime_seconds": runtime,
                     "sample_rule": sample_rule,
                     "parameters": "covariance_type=full",
-                    "mean_ARI": None,
-                    "std_ARI": None,
-                    "min_ARI": None,
-                    "max_ARI": None
+                    "mean_ARI": gmm_stability["mean_ARI"],
+                    "std_ARI": gmm_stability["std_ARI"],
+                    "min_ARI": gmm_stability["min_ARI"],
+                    "max_ARI": gmm_stability["max_ARI"],
                 }
             )
 
