@@ -2,6 +2,7 @@ import time
 import numpy as np
 import pandas as pd
 import itertools
+from typing import Literal
 from sklearn.cluster import KMeans
 from sklearn.metrics import (
     silhouette_score,
@@ -15,13 +16,7 @@ from src.modeling import ikmeans_initialize
 
 
 def kmeans_bootstrap_stability(X, K, n_boot=20, seed=42):
-    """
-    Bootstrap stability for K-Means via pairwise ARI on overlapping records.
-
-    For each pair of bootstrap samples, ARI is computed only on the intersection
-    of record indices present in both samples. This avoids the need for label
-    alignment across disjoint sets and is the same method used in notebook 03.
-    """
+    """Estimate bootstrap ARI stability for K-Means on overlapping samples."""
     if isinstance(X, pd.DataFrame):
         X = X.values
 
@@ -63,11 +58,10 @@ def kmeans_bootstrap_stability(X, K, n_boot=20, seed=42):
     }
 
 
-def gmm_seed_stability(X, K, seeds, covariance_type="full", n_init=3):
-    """
-    Stability of GMM across seeds via pairwise ARI between hard assignments.
-    Returns mean/std/min/max ARI across all seed pairs.
-    """
+def gmm_seed_stability(
+    X, K, seeds, covariance_type: Literal["full", "tied", "diag", "spherical"] = "full", n_init=3
+):
+    """Compute pairwise ARI stability for GMM across random seeds."""
     from sklearn.mixture import GaussianMixture
 
     all_labels = []
@@ -99,14 +93,10 @@ def gmm_seed_stability(X, K, seeds, covariance_type="full", n_init=3):
 
 def evaluate_models(
         X_processed, rep_id, k_range=range(3, 9), seeds=[42, 123, 456, 789, 999], sample_rule="full_dataset"):
-    """
-    Executes stability tests for standard K-Means across multiple Ks and seeds,
-    initializes iK-Means to determine the optimal K, and generates the experiment logs
-    tracking runtime, silhouette, calinski_harabasz, and davies_bouldin scores.
-    """
+    """Run clustering evaluations and return experiment logs."""
     logs = []
 
-    print("\nStarting Standard K-Means evaluation")
+    print("Starting K-Means evaluation")
     for k in k_range:
         stability_metrics = kmeans_bootstrap_stability(
             X_processed, k, n_boot=20, seed=42)
@@ -140,7 +130,7 @@ def evaluate_models(
                 }
             )
 
-    print("\nInitializing GMM")
+    print("Starting GMM evaluation")
     for k in k_range:
         gmm_stability = gmm_seed_stability(X_processed, k, seeds=seeds)
         for seed in seeds:
@@ -176,7 +166,7 @@ def evaluate_models(
                 }
             )
 
-    print("\nInitializing iK-MEANS")
+    print("Starting iK-means initialization")
     try:
         start_time_ik = time.time()
 
@@ -186,7 +176,7 @@ def evaluate_models(
         )
 
         k_ik = len(init_centroids)
-        print(f"Success! iK-Means determined K={k_ik} clusters.")
+        print(f"iK-Means determined K={k_ik} clusters.")
 
         if k_ik >= 2:
             kmeans_ik = KMeans(n_clusters=k_ik, init=init_centroids, n_init=1)

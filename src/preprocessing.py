@@ -11,12 +11,7 @@ from sklearn.preprocessing import (
 
 
 def clean_and_engineer_data(df):
-    """
-    Performs initial pandas-level cleaning and feature engineering.
-    Imputes missing 'children' values with 0, derives 'total_nights' and 'party_size',
-    groups rare countries keeping only the Top 15 (rest as 'Other'),
-    and fills missing categorical values with 'Unknown'.
-    """
+    """Basic data cleaning and feature creation."""
     df = df.copy()
 
     df = df[(df['adr'] >= 0) & (df['adr'] <= 5000)]
@@ -38,13 +33,7 @@ def clean_and_engineer_data(df):
 
 
 def build_preprocessor(scaler_type="standard", include_hotel=True):
-    """
-    Builds the scikit-learn ColumnTransformer to create the R-EUCLID matrix.
-    Applies log1p transformation to heavy right-skewed numericals,
-    scales numericals using either StandardScaler or RobustScaler,
-    and applies full One-Hot Encoding to categoricals without scaling the 0/1 outputs.
-    Drops any unlisted columns to control data leakage.
-    """
+    """Create a ColumnTransformer for numeric and categorical features."""
     log_num_features = [
         "lead_time",
         "previous_cancellations",

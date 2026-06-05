@@ -2,7 +2,6 @@ import pandas as pd
 import hashlib
 import os
 
-
 def load_data(file_path="data/raw/hotel_bookings_course_release_v1.csv"):
     """
     Loads the dataset from the specified path and verifies its integrity.
