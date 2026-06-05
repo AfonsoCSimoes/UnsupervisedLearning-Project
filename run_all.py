@@ -7,12 +7,6 @@ from src.preprocessing import clean_and_engineer_data, build_preprocessor
 from src.evaluation import evaluate_models
 
 def main():
-    """
-    Main execution pipeline. Sets up directories, loads and cleans data,
-    extracts profiling variables, applies preprocessing, evaluates clustering
-    models (Standard and Robust variants, with/without Hotel), and saves 
-    the results to experiments.csv.
-    """
     parser = argparse.ArgumentParser(description="Run the unsupervised learning pipeline.")
     parser.add_argument(
         "--fast", 
@@ -22,7 +16,7 @@ def main():
     args = parser.parse_args()
 
     initial = datetime.datetime.now()
-    print(f"Starting Unsupervised Learning Pipeline... (Fast Mode: {args.fast})")
+    print(f"Starting pipeline (fast={args.fast})")
 
     os.makedirs("tables", exist_ok=True)
     os.makedirs("figures", exist_ok=True)
@@ -46,7 +40,7 @@ def main():
     print("Extracting 'adr' and outcome variables for post-hoc profiling...")
     df_cleaned = clean_and_engineer_data(df)
     
-    # Save the base data so notebooks can map labels back to original rows
+    # save profiling base data
     profiling_data = df_cleaned[["is_canceled", "reservation_status", "adr"]].copy()
     profiling_data.to_csv("tables/profiling_base_data.csv", index=False)
 
@@ -57,8 +51,7 @@ def main():
         for include_hotel in [True, False]:
             hotel_tag = "withHotel" if include_hotel else "noHotel"
             rep_id = f"R-EUCLID-{scaler_type}-countryTop15-noADR-{hotel_tag}"
-            
-            print(f"\n--- Processing Representation: {rep_id} ---")
+            print(f"Processing: {rep_id}")
             preprocessor = build_preprocessor(scaler_type=scaler_type, include_hotel=include_hotel)
             X_processed = preprocessor.fit_transform(df_cleaned)
 
@@ -66,11 +59,11 @@ def main():
             print("Testing K-Means, GMM, and iK-Means...")
 
             results_df = evaluate_models(
-                X_processed=X_processed, 
+                X_processed=X_processed,
                 rep_id=rep_id,
                 k_range=k_range,
                 seeds=seeds,
-                sample_rule=sample_rule
+                sample_rule=sample_rule,
             )
             all_results.extend(results_df)
 

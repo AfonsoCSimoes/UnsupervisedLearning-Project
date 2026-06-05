@@ -19,9 +19,7 @@ class APCluster:
 def compute_feature_statistics(
     X: FloatArray, use_unit_ranges: bool = False
 ) -> Tuple[FloatArray, FloatArray, float]:
-    """
-    Computes the grand mean, feature scales, and total normalized scatter.
-    """
+    """Compute mean, feature scales, and total scatter."""
     mu = np.mean(X, axis=0)
 
     if use_unit_ranges:
@@ -39,17 +37,13 @@ def compute_feature_statistics(
 def normalized_squared_distances(
     X: FloatArray, indices: list[int], scales: FloatArray, reference: FloatArray
 ) -> FloatArray:
-    """
-    Returns the normalized squared distances of selected rows to a reference point.
-    """
+    """Return normalized squared distances to a reference point."""
     X_sub = X[indices]
     return np.sum(((X_sub - reference) / scales) ** 2, axis=1)
 
 
 def cluster_centroid(X: FloatArray, indices: list[int]) -> FloatArray:
-    """
-    Returns the component-wise mean of the selected rows.
-    """
+    """Component-wise mean of selected rows."""
     return np.mean(X[indices], axis=0)
 
 
@@ -63,11 +57,10 @@ def extract_anomalous_cluster(
     tol: float = 1e-12,
     max_iter: int = 10_000,
 ) -> Tuple[list[int], FloatArray]:
-    """
-    Alternates assignment and centroid update to extract one anomalous cluster.
-    """
+    """Extract a single anomalous cluster by iterative refinement."""
     c = initial_centroid.copy()
     S_prev = []
+    S = [seed_index]
 
     for _ in range(max_iter):
         dist_c = normalized_squared_distances(X, indices, scales, c)
@@ -100,10 +93,7 @@ def ikmeans_initialize(
     max_iter: int = 10_000,
     use_unit_ranges: bool = False,
 ) -> Tuple[List[APCluster], FloatArray]:
-    """
-    Main iK-means initialization procedure. Identifies anomalous clusters
-    and returns them along with their standardized initial centroids.
-    """
+    """iK-means initialization: identify anomalous clusters and centroids."""
     X = np.asarray(X, dtype=np.float64)
     n, d = X.shape
 
